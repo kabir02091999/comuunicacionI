@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>carro</title>
+    <link rel="stylesheet" href="diseño.css">
+</head>
+<body>
+    <h1 class="NRJugadores">jugdor:</h1>
+    <h2 class="tiempo">Tiempo:</h2>
+    <div class="grande">
+        <div class="hola">
+
+        </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script >
+        let tiempo=null
+        // optener h1clase NRJgadores
+        var NRJugadores = document.querySelector('.NRJugadores');
+        var mostrartiempo = document.querySelector('.tiempo');
+        let jugadores = 0;
+        var socket = io();
+        socket.on('connect', function(){
+            console.log('conectado al servidor');
+        });
+        // obtener el div llamado grande 
+
+        var grande = document.querySelector('.hola');
+        let x = 0;
+        tiempo=0
+                intervalo=setInterval(function(){
+                    if(activo){
+
+                        tiempo++
+                        mostrartiempo.innerHTML = "Tiempo: " + tiempo;
+
+                    }
+                    
+                },1000)
+
+        // eventos de tecla derecha y tecla izquierda
+        document.addEventListener('keydown', function(evento){
+            let intervalo = null
+           
+            if(tiempo===null && (evento.key == 'ArrowRight' || evento.key == 'ArrowLeft') && activo){
+                
+                
+            }
+            if(evento.key == 'ArrowRight'&& x<550){
+                x+=5;
+                //console.log('hola ' + x);// mover el div a la derecha
+                grande.style.left = x + 'px';
+            }
+            if(evento.key == 'ArrowLeft'&& x>0){
+                x-=5;
+                //console.log('hola1111'+ x);// mover el div a la izquierda
+                grande.style.left = x + 'px';
+            }
+            if(x<=0 && activo && jugadores!=1){
+                activo =false
+                console.log("inicio")
+                socket.emit('atras', jugadores);
+                grande.style.display = 'none';
+
+            }else if(x>=550 && activo ){
+               if(ultimo){
+                
+                activo =false
+            
+            }else{
+
+                console.log("final")
+                // envia mensaje al servidor
+                socket.emit('final', jugadores);
+                grande.style.display = 'none';
+                activo=false
+
+            }  
+               
+            }
+            
+        });
+    
+        //resive mensaje del servidor
+        socket.on('inicio', function(mensaje){
+            NRJugadores.innerHTML = "jugador: " + mensaje;
+            console.log(mensaje);
+            if(mensaje == 1){
+                grande.style.display = 'block';
+                activo=true
+            }
+            jugadores = mensaje;
+        });
+
+        socket.on('arracar', function(n){
+            if(n == jugadores){
+                grande.style.display = 'block';
+                activo=true
+                x=0
+            }
+            console.log("arasdoaj")
+        });
+        socket.on('desdeatras', function(n){
+            if(n == jugadores){
+                grande.style.display = 'block';
+                activo=true
+                x=550                
+            }
+        });
+        let ultimo=false
+        socket.on('ultimo', function(n){
+            if(n == jugadores){
+                ultimo=true
+            }else{
+                ultimo=false
+            }
+            console.log(ultimo)
+
+        });
+
+        activo=false
+    </script>
+</body>
+</html>
